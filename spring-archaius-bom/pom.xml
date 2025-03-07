@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.github.vicky-cmd</groupId>
+    <artifactId>spring-archaius-bom</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Spring Archaius Configuration Management BOM</name>
+    <description>Spring Archaius Configuration Parent BOM</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <spring.archaius.version>${project.version}</spring.archaius.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.vicky-cmd</groupId>
+                <artifactId>spring-archaius-core</artifactId>
+                <version>${spring.archaius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.vicky-cmd</groupId>
+                <artifactId>spring-archaius-docgen</artifactId>
+                <version>${spring.archaius.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.vicky-cmd</groupId>
+                <artifactId>spring-archaius-plugin</artifactId>
+                <version>${spring.archaius.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
