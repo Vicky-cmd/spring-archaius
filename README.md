@@ -1,6 +1,6 @@
 <div align="center">
     <p>
-        <a href="#"><img src="./resources/archaius.png" height="100" alt="Spring Archaius"></a>
+        <a href="#"><img src="https://raw.githubusercontent.com/Vicky-cmd/spring-archaius/refs/heads/main/resources/logo-wide.jpg" height="300" alt="Spring Archaius"></a>
     </p>
     <h1>Spring Archaius</h1>
 </div>
