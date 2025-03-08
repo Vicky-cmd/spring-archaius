@@ -6,26 +6,32 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.2</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>io.github.vicky-cmd</groupId>
     <artifactId>spring-archaius-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Spring Archaius Core</name>
-    <description>Spring Archaius Configuration Management Module</description>
-    <url/>
+    <description>Core Module of the Spring Archaius Configuration Management System with all the business handling and all the functionalities associated with this process.</description>
+    <url>https://github.com/Vicky-cmd/spring-archaius</url>
+    <scm>
+        <connection>scm:git:https://github.com/Vicky-cmd/spring-archaius.git</connection>
+        <developerConnection>scm:git:git@github.com/Vicky-cmd/spring-archaius.git</developerConnection>
+        <url>https://github.com/Vicky-cmd/spring-archaius</url>
+        <tag>HEAD</tag>
+    </scm>
     <licenses>
-        <license/>
+        <license>
+            <name>GPL-3.0</name>
+            <url>https://github.com/Vicky-cmd/spring-archaius/blob/main/LICENSE</url>
+        </license>
     </licenses>
     <developers>
-        <developer/>
+        <developer>
+            <name>Vicky-cmd</name>
+            <url>https://github.com/Vicky-cmd</url>
+        </developer>
     </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
     <properties>
         <java.version>17</java.version>
         <archaius.version>0.7.6</archaius.version>
@@ -35,6 +41,9 @@
         <commons-configuration.versoion>1.10</commons-configuration.versoion>
         <javaparser.version>3.25.10</javaparser.version>
         <maven.model.version>3.9.6</maven.model.version>
+        <maven.gpg.plugin.version>3.0.1</maven.gpg.plugin.version>
+        <maven.central.publishing.plugin>0.7.0</maven.central.publishing.plugin>
+        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
     </properties>
     <dependencies>
         <dependency>
@@ -185,6 +194,62 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven.gpg.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <passphrase>${gpg.passphrase}</passphrase>
+                    <gpgArguments>
+                        <arg>--batch</arg>
+                        <arg>--yes</arg>
+                    </gpgArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>${maven.central.publishing.plugin}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>published</waitUntil>
+                </configuration>
             </plugin>
         </plugins>
     </build>

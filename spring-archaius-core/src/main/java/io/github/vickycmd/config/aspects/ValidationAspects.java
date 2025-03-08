@@ -13,12 +13,74 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 
+
+/**
+ * The ValidationAspects class provides aspect-oriented validation for configuration fields.
+ * It intercepts method calls annotated with {@link io.github.vickycmd.config.ValidateField} 
+ * and validates the {@link io.github.vickycmd.config.fields.Field} parameters according to their defined constraints.
+ *
+ * <p>Features include:</p>
+ * <ul>
+ *   <li>Validation of field values against allowed values</li>
+ *   <li>Custom validation using field validators</li>
+ *   <li>Sensitive data handling</li>
+ *   <li>Detailed error reporting through {@link io.github.vickycmd.config.errors.ConfigException}</li>
+ * </ul>
+ *
+ * <p>This class requires:</p>
+ * <ul>
+ *   <li>Spring AOP support enabled</li>
+ *   <li>Property 'spring.archaius.config.validation.enabled' set to true (default)</li>
+ * </ul>
+ *
+ * <p>This class works in conjunction with:</p>
+ * <ul>
+ *   <li>{@link io.github.vickycmd.config.ValidateField} - Annotation to mark methods for validation</li>
+ *   <li>{@link io.github.vickycmd.config.fields.Field} - Field definitions with validation rules</li>
+ *   <li>{@link io.github.vickycmd.config.Configuration} - Main configuration handling class</li>
+ * </ul>
+ *
+ * <p>Example usage:</p>
+ * <pre>
+ * {@code
+ * @ValidateField
+ * public <T> T get(Field property, Class<T> targetType) {
+ *     // Method implementation
+ * }
+ * }
+ * </pre>
+ *
+ * @author Vicky CMD
+ * @version 1.0
+ * @see io.github.vickycmd.config.ValidateField
+ * @see io.github.vickycmd.config.fields.Field
+ * @see io.github.vickycmd.config.Configuration
+ * @since 1.0
+ */
 @Slf4j
 @Aspect
 @Component
 @ConditionalOnProperty(prefix = "spring.archaius.config.validation", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class ValidationAspects {
 
+    /**
+     * Intercepts method calls annotated with {@link io.github.vickycmd.config.ValidateField}
+     * and validates the {@link io.github.vickycmd.config.fields.Field} parameters according to their defined constraints.
+     *
+     * @param joinPoint the method execution join point
+     * @return the result of the method execution if validation passes, otherwise throws a ConfigException
+     * @throws Throwable if an error occurs during method execution or validation fails
+     *
+     * <p>Example usage:</p>
+     * <pre>
+     * {@code
+     * @ValidateField
+     * public <T> T get(Field property, Class<T> targetType) {
+     *     // Method implementation
+     * }
+     * }
+     * </pre>
+     */
     @Around("@annotation(io.github.vickycmd.config.ValidateField) && execution(* *(.., io.github.vickycmd.config.fields.Field, ..))")
     public Object validateField(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();

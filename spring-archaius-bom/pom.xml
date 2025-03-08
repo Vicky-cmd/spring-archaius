@@ -6,11 +6,33 @@
     <artifactId>spring-archaius-bom</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Spring Archaius Configuration Management BOM</name>
-    <description>Spring Archaius Configuration Parent BOM</description>
+    <description>Spring Archaius Configuration Parent BOM that can be used to manage all the versions of the related jars</description>
     <packaging>pom</packaging>
+    <url>https://github.com/Vicky-cmd/spring-archaius</url>
+    <scm>
+        <connection>scm:git:https://github.com/Vicky-cmd/spring-archaius.git</connection>
+        <developerConnection>scm:git:git@github.com/Vicky-cmd/spring-archaius.git</developerConnection>
+        <url>https://github.com/Vicky-cmd/spring-archaius</url>
+        <tag>HEAD</tag>
+    </scm>
+    <licenses>
+        <license>
+            <name>GPL-3.0</name>
+            <url>https://github.com/Vicky-cmd/spring-archaius/blob/main/LICENSE</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Vicky-cmd</name>
+            <url>https://github.com/Vicky-cmd</url>
+        </developer>
+    </developers>
 
     <properties>
         <spring.archaius.version>${project.version}</spring.archaius.version>
+        <maven.gpg.plugin.version>3.0.1</maven.gpg.plugin.version>
+        <maven.central.publishing.plugin>0.7.0</maven.central.publishing.plugin>
+        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
     </properties>
 
     <dependencyManagement>
@@ -32,5 +54,66 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven.gpg.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <passphrase>${gpg.passphrase}</passphrase>
+                    <gpgArguments>
+                        <arg>--batch</arg>
+                        <arg>--yes</arg>
+                    </gpgArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>${maven.central.publishing.plugin}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>published</waitUntil>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
