@@ -9,11 +9,78 @@
     <description>Spring Archaius Configuration Parent POM</description>
     <packaging>pom</packaging>
 
+    <properties>
+        <maven.gpg.plugin.version>3.0.1</maven.gpg.plugin.version>
+        <maven.central.publishing.plugin>0.7.0</maven.central.publishing.plugin>
+        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+    </properties>
+
     <modules>
         <module>spring-archaius-core</module>
         <module>spring-archaius-docgen</module>
         <module>spring-archaius-plugin</module>
         <module>spring-archaius-bom</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven.gpg.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <passphrase>${gpg.passphrase}</passphrase>
+                    <gpgArguments>
+                        <arg>--batch</arg>
+                        <arg>--yes</arg>
+                    </gpgArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>${maven.central.publishing.plugin}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>published</waitUntil>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
