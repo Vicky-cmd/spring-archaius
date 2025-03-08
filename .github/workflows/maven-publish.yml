@@ -31,7 +31,9 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
     - name: Import GPG Key
       run: |
-        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch
+        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > private-key.asc
+        ls -la
+        gpg --import --batch private-key.asc
         echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
         gpgconf --reload gpg-agent
     - name: Build and Deploy packages to Maven
