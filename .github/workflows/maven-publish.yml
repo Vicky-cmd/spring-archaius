@@ -27,6 +27,18 @@ jobs:
         server-id: central 
         server-username: ${{ secrets.MAVEN_USERNAME }}
         server-password: ${{ secrets.MAVEN_PASSWORD }}
+    - name: Configure Maven Settings
+      run: | 
+        mkdir -p ~/.m2
+        echo '<settings>
+        <servers>
+          <server>
+            <id>ossrh</id>
+            <username>${{ secrets.MAVEN_USERNAME }}</username>
+            <password>${{ secrets.MAVEN_PASSWORD }}</password>
+          </server>
+        </servers>
+        </settings>' > ~/.m2/settings.xml
     - name: Import GPG Key
       run: |
         echo "${{ secrets.GPG_PRIVATE_KEY }}"
