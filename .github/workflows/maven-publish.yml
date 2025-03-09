@@ -35,9 +35,11 @@ jobs:
       run: |
         echo "${{ secrets.GPG_PRIVATE_KEY }}"
         echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > private-key.asc
-        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch
+        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch --allow-secret-key-import --yes
         echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
         gpgconf --reload gpg-agent 
+      env:
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
     - name: Upload Artifact on Failure
       uses: actions/upload-artifact@v4
       if: failure()
