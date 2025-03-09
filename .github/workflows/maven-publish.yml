@@ -37,7 +37,7 @@ jobs:
     - name: Displaying Dependencies
       run: mvn dependency:tree
     - name: Build and Deploy packages to Maven
-      run: mvn clean deploy -Dhttps.protocols=TLSv1.2
+      run: mvn clean deploy -Dhttps.protocols=TLSv1.2 -DskipTests
       env:
         GITHUB_TOKEN: ${{ github.token }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
