@@ -11,6 +11,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: Deployment
     permissions:
       contents: read
       packages: write
