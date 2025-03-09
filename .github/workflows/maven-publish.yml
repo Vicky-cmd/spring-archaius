@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: Deployment
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
