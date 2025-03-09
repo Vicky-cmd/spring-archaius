@@ -111,7 +111,9 @@ jobs:
           git add ./spring-archaius-docgen/pom.xml
           git add ./spring-archaius-plugin/pom.xml
           git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Vicky-cmd/spring-archaius.git || echo "No changes to push"
         else
           echo "No changes to commit/push"
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
