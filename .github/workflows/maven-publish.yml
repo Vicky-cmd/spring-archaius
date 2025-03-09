@@ -40,10 +40,78 @@ jobs:
       run: java --version
     - name: Check Maven Version
       run: mvn --version
+    - name: Update Project Version
+      run: |
+        echo "Updating project Version"
+        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        if [[ $VERSION == *"-SNAPSHOT" ]]; then
+          BASE_VERSION=${VERSION%-SNAPSHOT}
+          IS_SNAPSHOT=true
+        else
+          BASE_VERSION=$VERSION
+          IS_SNAPSHOT=false
+        fi
+        echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
+        echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> $GITHUB_ENV
+    - name: Extract Version from version.txt
+      run: |
+        if [[ -f ".github/version.txt" ]]; then
+          VERSION_TXT=$(cat .github/version.txt | tr -d '[:space:]')
+        else
+          VERSION_TXT="0.0.1"
+        fi
+        echo "VERSION_TXT=$VERSION_TXT" >> $GITHUB_ENV
+    - name: Compare and create new version
+      run: |
+        IS_NEW_VERSION=false
+        if [[ "$BASE_VERSION" == "$VERSION_TXT" ]]; then
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          IS_NEW_VERSION=true
+          echo "Versions matched. Incrementing patch version: $NEW_VERSION"
+        else
+          NEW_VERSION="$BASE_VERSION"
+          echo "Versions did not match. Keeping base version: $NEW_VERSION"
+        fi
+        if [[ "$IS_SNAPSHOT" == "true" ]]; then
+          NEW_VERSION="$NEW_VERSION-SNAPSHOT"
+        fi
+        echo "UPDATED_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+        echo "IS_NEW_VERSION=$IS_NEW_VERSION" >> $GITHUB_ENV
+    - name: Update Maven Project Versions
+      run: |
+        if [[ "$IS_NEW_VERSION" == "true" ]]; then
+          echo "Updating project Versions"
+          mvn versions:set -DnewVersion='$IS_NEW_VERSION' -DprocessAllModules
+          mvn versions:commit
+          echo "Version upgrades completed for all the modules"
+        else
+          echo "Version update Not needed"
+        fi
     - name: Build and Deploy packages to Maven
-      run: mvn clean deploy -Dhttps.protocols=TLSv1.2 -DskipTests
+      run: mvn clean install -Dhttps.protocols=TLSv1.2 -DskipTests
       env:
         GITHUB_TOKEN: ${{ github.token }}
         MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+    - name: Update Maven Project versions details
+      run: |
+        if [[ "$IS_NEW_VERSION" == "true" ]]; then
+          echo "Update project version details"
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          echo "$UPDATED_VERSION" > .github/version.txt
+          git add .github/version.txt 
+          git add pom.xml
+          git add ./spring-archaius-bom/pom.xml
+          git add ./spring-archaius-core/pom.xml
+          git add ./spring-archaius-docgen/pom.xml
+          git add ./spring-archaius-plugin/pom.xml
+          git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
+          git push || echo "No changes to push"
+        else
+          echo "No changes to commit/push"
+        fi
