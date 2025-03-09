@@ -33,7 +33,7 @@ jobs:
         echo '<settings>
         <servers>
           <server>
-            <id>ossrh</id>
+            <id>central</id>
             <username>${{ secrets.MAVEN_USERNAME }}</username>
             <password>${{ secrets.MAVEN_PASSWORD }}</password>
           </server>
