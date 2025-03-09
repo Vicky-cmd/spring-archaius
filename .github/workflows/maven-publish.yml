@@ -35,7 +35,7 @@ jobs:
       run: |
         echo "${{ secrets.GPG_PRIVATE_KEY }}"
         echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > private-key.asc
-        gpg --import --batch private-key.asc
+        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch
         echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
         gpgconf --reload gpg-agent 
     - name: Upload Artifact on Failure
