@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.vicky-cmd</groupId>
     <artifactId>spring-archaius-config</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>$IS_NEW_VERSION</version>
     <name>Spring Archaius Configuration Management</name>
     <description>Spring Archaius Configuration Parent POM</description>
     <packaging>pom</packaging>

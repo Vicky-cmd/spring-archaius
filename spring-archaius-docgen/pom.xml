@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.vicky-cmd</groupId>
     <artifactId>spring-archaius-docgen</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>$IS_NEW_VERSION</version>
     <name>Spring Archaius Config Docgen</name>
     <description>DocGen Module of the Spring Archaius Configuration Management System to support Generating Documentation using Command Line Utility.</description>
     <url>https://github.com/Vicky-cmd/spring-archaius</url>
