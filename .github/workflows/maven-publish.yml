@@ -74,17 +74,17 @@ jobs:
           NEW_VERSION="$BASE_VERSION"
           echo "Versions did not match. Keeping base version: $NEW_VERSION"
         fi
+        echo "UPDATED_VERSION=$NEW_VERSION" >> $GITHUB_ENV
         if [[ "$IS_SNAPSHOT" == "true" ]]; then
           NEW_VERSION="$NEW_VERSION-SNAPSHOT"
         fi
-        echo "UPDATED_VERSION=$NEW_VERSION" >> $GITHUB_ENV
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
         echo "IS_NEW_VERSION=$IS_NEW_VERSION" >> $GITHUB_ENV
     - name: Update Maven Project Versions
       run: |
         if [[ "$IS_NEW_VERSION" == "true" ]]; then
           echo "Updating project Versions"
-          mvn versions:set -DnewVersion='$IS_NEW_VERSION' -DprocessAllModules
+          mvn versions:set -DnewVersion="$NEW_VERSION" -DprocessAllModules
           mvn versions:commit
           echo "Version upgrades completed for all the modules"
         else
@@ -110,8 +110,9 @@ jobs:
           git add ./spring-archaius-core/pom.xml
           git add ./spring-archaius-docgen/pom.xml
           git add ./spring-archaius-plugin/pom.xml
-          git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          cat pom.xml
+          # git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
+          # git push || echo "No changes to push"
         else
           echo "No changes to commit/push"
         fi
