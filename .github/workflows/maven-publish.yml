@@ -29,35 +29,17 @@ jobs:
         server-password: MAVEN_PASSWORD
     - name: Import GPG Key
       run: |
-        echo "${{ secrets.GPG_PRIVATE_KEY }}"
-        echo "Generating private Key file"
-        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > private-key.asc
-        echo "Private Key file Generated"
-        ls -la
-        echo "Importing Secret Key"
+        echo "Importing GPG Secret Key to Github Action from Secrets"
         echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch --allow-secret-key-import --yes
-        echo "Completed importing Secret Key"
-        echo "Allow loopback Pinentry"
         echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
-        echo "Completed loopback Pinentry"
         gpgconf --reload gpg-agent 
-        echo "Completed Process..."
+        echo "Completed Loading the GPG Secret Key to the machine"
       env:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-    - name: Upload Artifact on Failure
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: private-key.asc
-        path: private-key.asc
-    - name: Check Settings.xml
-      run: cat ~/.m2/settings.xml
     - name: Check Java Version
       run: java --version
     - name: Check Maven Version
       run: mvn --version
-    - name: Displaying Dependencies
-      run: mvn dependency:tree
     - name: Build and Deploy packages to Maven
       run: mvn clean deploy -Dhttps.protocols=TLSv1.2 -DskipTests
       env:
