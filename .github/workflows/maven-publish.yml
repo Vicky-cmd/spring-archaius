@@ -50,7 +50,8 @@ jobs:
       with:
         name: private-key.asc
         path: private-key.asc
-        
+    - name: Check Settings.xml
+      run: cat ~/.m2/settings.xml
     - name: Check Java Version
       run: java --version
     - name: Check Maven Version
