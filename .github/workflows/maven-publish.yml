@@ -34,10 +34,18 @@ jobs:
     - name: Import GPG Key
       run: |
         echo "${{ secrets.GPG_PRIVATE_KEY }}"
+        echo "Generating private Key file"
         echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > private-key.asc
+        echo "Private Key file Generated"
+        ls -la
+        echo "Importing Secret Key"
         echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch --allow-secret-key-import --yes
+        echo "Completed importing Secret Key"
+        echo "Allow loopback Pinentry"
         echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+        echo "Completed loopback Pinentry"
         gpgconf --reload gpg-agent 
+        echo "Completed Process..."
       env:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
     - name: Upload Artifact on Failure
