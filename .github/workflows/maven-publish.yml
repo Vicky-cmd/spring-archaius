@@ -29,7 +29,11 @@ jobs:
         gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
         gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
     - name: Import GPG Key
-      run: gpg --list-secret-keys --keyid-format LONG
+      run: |
+        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch
+        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+        gpgconf --reload gpg-agent
+        
     - name: Check Java Version
       run: java --version
     - name: Check Maven Version
