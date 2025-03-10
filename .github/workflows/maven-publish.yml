@@ -168,7 +168,7 @@ jobs:
         zip -r "./release/spring-archaius-docgen-linux-$UPDATED_VERSION.zip" "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/"
 
         if [ -f "./spring-archaius-docgen/release/changelog.txt" ]; then
-          echo "CHANGELOG=$(cat ./spring-archaius-docgen/release/changelog.txt | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
+          echo "CHANGELOG=$(cat ./spring-archaius-docgen/release/changelog.txt)" >> $GITHUB_ENV
         else
           echo "CHANGELOG=No changelog provided for this release." >> $GITHUB_ENV
         fi
