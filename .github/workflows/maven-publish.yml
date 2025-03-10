@@ -124,7 +124,7 @@ jobs:
           # git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
           # git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
           # git push || echo "No changes to push"
-        elif [[ "$VERSION_TXT_EXISTS" == "false" ]]; then
+        elif [[ "$VERSION_TXT_EXISTS" == "false" || "$BASE_VERSION" != "$VERSION_TXT" ]]; then
           echo "Update project version details"
           echo "Setting version details to $UPDATED_VERSION"
           echo "$UPDATED_VERSION" > .github/version.txt
@@ -139,7 +139,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Generating aftifacts for 
-      if: env.IS_NEW_VERSION == 'true'
+      if: env.IS_NEW_VERSION == 'true' || env.BASE_VERSION == env.VERSION_TXT || env.VERSION_TXT_EXISTS == 'false'
       run: |
         echo "Generating Release Folders"
         mkdir release
@@ -174,7 +174,7 @@ jobs:
         fi
     - name: Create Github Release
       id: create_release
-      if: env.IS_NEW_VERSION == 'true'
+      if: env.IS_NEW_VERSION == 'true' || env.BASE_VERSION == env.VERSION_TXT || env.VERSION_TXT_EXISTS == 'false'
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -191,7 +191,7 @@ jobs:
             - 🖥️ Windows: `spring-archaius-docgen-windows-${{env.UPDATED_VERSION}}.zip`
             - 🐧 Linux: `spring-archaius-docgen-linux-${{env.UPDATED_VERSION}}.zip`
     - name: Uploading Release Windows artifact
-      if: env.IS_NEW_VERSION == 'true'
+      if: env.IS_NEW_VERSION == 'true' || env.BASE_VERSION == env.VERSION_TXT || env.VERSION_TXT_EXISTS == 'false'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -201,7 +201,7 @@ jobs:
         asset_name: spring-archaius-docgen-windows-${{ env.UPDATED_VERSION }}.zip
         asset_content_type: application/zip
     - name: Uploading Release Linux artifact
-      if: env.IS_NEW_VERSION == 'true'
+      if: env.IS_NEW_VERSION == 'true' || env.BASE_VERSION == env.VERSION_TXT || env.VERSION_TXT_EXISTS == 'false'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
