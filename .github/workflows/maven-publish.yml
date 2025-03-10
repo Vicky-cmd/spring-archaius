@@ -138,7 +138,7 @@ jobs:
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Generating aftifacts for 
+    - name: Generating aftifacts for DocGen Release
       if: env.IS_NEW_VERSION == 'true' || env.BASE_VERSION != env.VERSION_TXT || env.VERSION_TXT_EXISTS == 'false'
       run: |
         echo "Generating Release Folders"
@@ -164,14 +164,19 @@ jobs:
         echo "Copying lib files"          
         cp "$JAR_FILE" "./release/spring-archaius-docgen-windows-$UPDATED_VERSION/lib/spring-archaius-docgen.jar"
         cp "$JAR_FILE" "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/lib/spring-archaius-docgen.jar"
+
+        cp ./spring-archaius-docgen/README.md "./release/spring-archaius-docgen-windows-$UPDATED_VERSION/README.md"
+        cp ./spring-archaius-docgen/README.md "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/README.md"
         zip -r "./release/spring-archaius-docgen-windows-$UPDATED_VERSION.zip" "./release/spring-archaius-docgen-windows-$UPDATED_VERSION/"
         zip -r "./release/spring-archaius-docgen-linux-$UPDATED_VERSION.zip" "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/"
 
-        if [ -f "./spring-archaius-docgen/release/changelog.txt" ]; then
-          echo "CHANGELOG=$(cat ./spring-archaius-docgen/release/changelog.txt)" >> $GITHUB_ENV
-        else
-          echo "CHANGELOG=No changelog provided for this release." >> $GITHUB_ENV
+        CHANGELOG="No changelog provided for this release."
+        if [ -f "./spring-archaius-docgen/release/changelog.md" ]; then
+          CHANGELOG=$(cat ./spring-archaius-docgen/release/changelog.md)
         fi
+        echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+        echo "$CHANGELOG" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
     - name: Create Github Release
       id: create_release
       if: env.IS_NEW_VERSION == 'true' || env.BASE_VERSION != env.VERSION_TXT || env.VERSION_TXT_EXISTS == 'false'
