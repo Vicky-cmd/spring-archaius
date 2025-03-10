@@ -55,16 +55,19 @@ jobs:
         echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> $GITHUB_ENV
     - name: Extract Version from version.txt
       run: |
+        VERSION_TXT_EXISTS=false
         if [[ -f ".github/version.txt" ]]; then
+          VERSION_TXT_EXISTS=true
           VERSION_TXT=$(cat .github/version.txt | tr -d '[:space:]')
         else
-          VERSION_TXT="0.0.1"
+          VERSION_TXT="$BASE_VERSION"
         fi
+        echo "VERSION_TXT_EXISTS=$VERSION_TXT_EXISTS" >> $GITHUB_ENV
         echo "VERSION_TXT=$VERSION_TXT" >> $GITHUB_ENV
     - name: Compare and create new version
       run: |
         IS_NEW_VERSION=false
-        if [[ "$BASE_VERSION" == "$VERSION_TXT" ]]; then
+        if [[ "$BASE_VERSION" == "$VERSION_TXT" && "$VERSION_TXT_EXISTS" == "true" ]]; then
           IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
           PATCH=$((PATCH + 1))
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
@@ -91,7 +94,12 @@ jobs:
           echo "Version update Not needed"
         fi
     - name: Build and Deploy packages to Maven
-      run: mvn clean install -Dhttps.protocols=TLSv1.2 -DskipTests
+      run: |
+        if [[ "$IS_SNAPSHOT" == "true" ]]; then
+          mvn clean install -Dhttps.protocols=TLSv1.2 -DskipTests
+        else
+          mvn clean install -P -Dhttps.protocols=TLSv1.2 -DskipTests
+        fi
       env:
         GITHUB_TOKEN: ${{ github.token }}
         MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
@@ -111,10 +119,85 @@ jobs:
           git add ./spring-archaius-docgen/pom.xml
           git add ./spring-archaius-plugin/pom.xml
           cat pom.xml
+          echo "v$UPDATED_VERSION" 
+          echo "Release Version - $UPDATED_VERSION"
           # git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
+          # git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
           # git push || echo "No changes to push"
         else
           echo "No changes to commit/push"
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Generating aftifacts for 
+      if: env.IS_NEW_VERSION == 'true'
+      run: |
+        echo "Generating Release Folders"
+        mkdir release
+        mkdir "./release/spring-archaius-docgen-linux-$UPDATED_VERSION"
+        mkdir "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/lib"
+        mkdir "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/bin"
+        mkdir "./release/spring-archaius-docgen-windows-$UPDATED_VERSION"
+        mkdir "./release/spring-archaius-docgen-windows-$UPDATED_VERSION/lib"
+        mkdir "./release/spring-archaius-docgen-windows-$UPDATED_VERSION/bin"
+
+        JAR_FILE=$(ls ./spring-archaius-docgen/target/spring-archaius-docgen-*.jar 2>/dev/null | head -n 1)
+        if [ -z "$JAR_FILE" ]; then
+            echo "Matching JAR File Artifact not found"
+            exit 1
+        fi
+
+        echo "Copying script files to release folder"
+        cp ./spring-archaius-docgen/release/archaius-docgen.bat "./release/spring-archaius-docgen-windows-$UPDATED_VERSION/bin/archaius-docgen.bat"
+        cp ./spring-archaius-docgen/release/archaius-docgen.sh "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/bin/archaius-docgen.bat"
+        echo "Completed Copying Script files"
+
+        echo "Copying lib files"          
+        cp "$JAR_FILE" "./release/spring-archaius-docgen-windows-$UPDATED_VERSION/lib/spring-archaius-docgen.jar"
+        cp "$JAR_FILE" "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/lib/spring-archaius-docgen.jar"
+        zip -r "./release/spring-archaius-docgen-windows-$UPDATED_VERSION.zip" "./release/spring-archaius-docgen-windows-$UPDATED_VERSION/"
+        zip -r "./release/spring-archaius-docgen-linux-$UPDATED_VERSION.zip" "./release/spring-archaius-docgen-linux-$UPDATED_VERSION/"
+
+        if [ -f "./spring-archaius-docgen/release/changelog.txt" ]; then
+          echo "CHANGELOG=$(cat ./spring-archaius-docgen/release/changelog.txt | sed ':a;N;$!ba;s/\n/\\n/g')" >> $GITHUB_ENV
+        else
+          echo "CHANGELOG=No changelog provided for this release." >> $GITHUB_ENV
+        fi
+    - name: Create Github Release
+      id: create_release
+      if: env.IS_NEW_VERSION == 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ env.UPDATED_VERSION }}
+        release_name: Release v${{ env.UPDATED_VERSION }}
+        body: |
+          ## Release Details
+          - **Version**: v${{ env.UPDATED_VERSION }}
+          - **Date**: $(date +'%Y-%m-%d')
+          - **Changes**:
+            ${{ env.CHANGELOG }}
+          - **Platforms**:
+            - 🖥️ Windows: `spring-archaius-docgen-windows-${{env.UPDATED_VERSION}}.zip`
+            - 🐧 Linux: `spring-archaius-docgen-linux-${{env.UPDATED_VERSION}}.zip`
+    - name: Uploading Release Windows artifact
+      if: env.IS_NEW_VERSION == 'true'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release/spring-archaius-docgen-windows-${{ env.UPDATED_VERSION }}.zip
+        asset_name: spring-archaius-docgen-windows-${{ env.UPDATED_VERSION }}.zip
+        asset_content_type: application/zip
+    - name: Uploading Release Linux artifact
+      if: env.IS_NEW_VERSION == 'true'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release/spring-archaius-docgen-linux-${{ env.UPDATED_VERSION }}.zip
+        asset_name: spring-archaius-docgen-linux-${{ env.UPDATED_VERSION }}.zip
+        asset_content_type: application/zip
