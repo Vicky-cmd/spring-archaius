@@ -124,6 +124,15 @@ jobs:
           # git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
           # git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
           # git push || echo "No changes to push"
+        elif [[ "$VERSION_TXT_EXISTS" == "false" ]]; then
+          echo "Update project version details"
+          echo "Setting version details to $UPDATED_VERSION"
+          echo "$UPDATED_VERSION" > .github/version.txt
+          git add .github/version.txt 
+          echo "v$UPDATED_VERSION" 
+          # git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
+          # git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
+          # git push || echo "No changes to push"
         else
           echo "No changes to commit/push"
         fi
