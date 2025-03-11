@@ -94,9 +94,9 @@ jobs:
     - name: Build and Deploy packages to Maven
       run: |
         if [[ "$IS_SNAPSHOT" == "true" ]]; then
-          mvn clean deploy -Dhttps.protocols=TLSv1.2 -DskipTests
+          mvn clean install -Dhttps.protocols=TLSv1.2 -DskipTests
         else
-          mvn clean deploy -P central -Dhttps.protocols=TLSv1.2 -DskipTests
+          mvn clean install -Dhttps.protocols=TLSv1.2 -DskipTests
         fi
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -123,6 +123,8 @@ jobs:
            git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
            git push || echo "No changes to push"
         elif [[ "$VERSION_TXT_EXISTS" == "false" || "$BASE_VERSION" != "$VERSION_TXT" ]]; then
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
           echo "Update project version details"
           echo "Setting version details to $UPDATED_VERSION"
           echo "$UPDATED_VERSION" > .github/version.txt
