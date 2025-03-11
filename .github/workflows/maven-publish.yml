@@ -94,9 +94,9 @@ jobs:
     - name: Build and Deploy packages to Maven
       run: |
         if [[ "$IS_SNAPSHOT" == "true" ]]; then
-          mvn clean install -Dhttps.protocols=TLSv1.2 -DskipTests
+          mvn clean deploy -Dhttps.protocols=TLSv1.2 -DskipTests
         else
-          mvn clean install -P -Dhttps.protocols=TLSv1.2 -DskipTests
+          mvn clean deploy -P central -Dhttps.protocols=TLSv1.2 -DskipTests
         fi
       env:
         GITHUB_TOKEN: ${{ github.token }}
