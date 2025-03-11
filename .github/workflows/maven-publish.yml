@@ -119,18 +119,18 @@ jobs:
           cat pom.xml
           echo "v$UPDATED_VERSION" 
           echo "Release Version - $UPDATED_VERSION"
-          # git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
-          # git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
-          # git push || echo "No changes to push"
+           git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
+           git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
+           git push || echo "No changes to push"
         elif [[ "$VERSION_TXT_EXISTS" == "false" || "$BASE_VERSION" != "$VERSION_TXT" ]]; then
           echo "Update project version details"
           echo "Setting version details to $UPDATED_VERSION"
           echo "$UPDATED_VERSION" > .github/version.txt
           git add .github/version.txt 
           echo "v$UPDATED_VERSION" 
-          # git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
-          # git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
-          # git push || echo "No changes to push"
+           git commit -m "Update version.txt to $UPDATED_VERSION" || echo "No changes to commit"
+           git tag -a "v$UPDATED_VERSION" -m "Release Version - $UPDATED_VERSION"
+           git push || echo "No changes to push"
         else
           echo "No changes to commit/push"
         fi

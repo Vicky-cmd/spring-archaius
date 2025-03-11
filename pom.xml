@@ -6,9 +6,28 @@
     <artifactId>spring-archaius-config</artifactId>
     <version>0.0.1</version>
     <name>Spring Archaius Configuration Management</name>
-    <description>Spring Archaius Configuration Parent POM</description>
     <packaging>pom</packaging>
 
+    <description>Spring Archaius Configuration Parent POM</description>
+    <url>https://github.com/Vicky-cmd/spring-archaius</url>
+    <scm>
+        <connection>scm:git:https://github.com/Vicky-cmd/spring-archaius.git</connection>
+        <developerConnection>scm:git:git@github.com/Vicky-cmd/spring-archaius.git</developerConnection>
+        <url>https://github.com/Vicky-cmd/spring-archaius</url>
+        <tag>HEAD</tag>
+    </scm>
+    <licenses>
+        <license>
+            <name>GPL-3.0</name>
+            <url>https://github.com/Vicky-cmd/spring-archaius/blob/main/LICENSE</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Vicky-cmd</name>
+            <url>https://github.com/Vicky-cmd</url>
+        </developer>
+    </developers>
     <properties>
         <maven.gpg.plugin.version>3.0.1</maven.gpg.plugin.version>
         <maven.central.publishing.plugin>0.7.0</maven.central.publishing.plugin>
