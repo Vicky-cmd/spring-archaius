@@ -38,9 +38,7 @@ jobs:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
     - name: Check Java Version
       run: java --version
-    - name: Check Maven Version
-      run: mvn --version
-    - name: Update Project Version
+    - name: Extract Project Version from pom.xml
       run: |
         echo "Updating project Version"
         VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -53,7 +51,7 @@ jobs:
         fi
         echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
         echo "IS_SNAPSHOT=$IS_SNAPSHOT" >> $GITHUB_ENV
-    - name: Extract Version from version.txt
+    - name: Extract previous version from version.txt
       run: |
         VERSION_TXT_EXISTS=false
         if [[ -f ".github/version.txt" ]]; then
@@ -64,7 +62,7 @@ jobs:
         fi
         echo "VERSION_TXT_EXISTS=$VERSION_TXT_EXISTS" >> $GITHUB_ENV
         echo "VERSION_TXT=$VERSION_TXT" >> $GITHUB_ENV
-    - name: Compare and create new version
+    - name: Compare and finalize the new version
       run: |
         IS_NEW_VERSION=false
         if [[ "$BASE_VERSION" == "$VERSION_TXT" && "$VERSION_TXT_EXISTS" == "true" ]]; then
@@ -138,7 +136,7 @@ jobs:
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Generating aftifacts for DocGen Release
+    - name: Generating artifacts for DocGen Release
       if: env.IS_NEW_VERSION == 'true' || env.BASE_VERSION != env.VERSION_TXT || env.VERSION_TXT_EXISTS == 'false'
       run: |
         echo "Generating Release Folders"
