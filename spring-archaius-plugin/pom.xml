@@ -7,7 +7,7 @@
 
   <groupId>io.github.vicky-cmd</groupId>
   <artifactId>spring-archaius-plugin</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <packaging>maven-plugin</packaging>
 
   <name>Spring Archaius Plugin Maven Plugin</name>
