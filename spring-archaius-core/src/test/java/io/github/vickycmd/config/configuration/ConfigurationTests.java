@@ -11,19 +11,16 @@ import io.github.vickycmd.config.model.ApplicationProperty;
 import io.github.vickycmd.config.fields.Field;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
-import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 
@@ -1932,7 +1929,7 @@ class ConfigurationTests extends ArchaiusTests {
     void testGetShortReturnsUpdateValueIfValueSupplierExistsEvenIfDefaultIsProvided() throws IOException, InterruptedException {
         String key = "application.offers.count";
         Short expectedValue = 25;
-        Short defaultValue = 20;
+        short defaultValue = 20;
         Supplier<Short> defaultValueSupplier = () -> defaultValue;
         Short data = this.configuration.getShort(key);
         Assertions.assertNull(data);
@@ -2095,7 +2092,7 @@ class ConfigurationTests extends ArchaiusTests {
     void testGetShortFieldReturnsUpdateValueIfValueSupplierExistsEvenIfDefaultIsProvided() throws IOException, InterruptedException {
         Short defaultFieldValue = 10;
         Short expectedValue = 25;
-        Short defaultValue = 20;
+        short defaultValue = 20;
         Supplier<Short> defaultValueSupplier = () -> defaultValue;
         Field offersCountField = Field.builder()
                 .name("application.offers.count")
@@ -3189,19 +3186,34 @@ class ConfigurationTests extends ArchaiusTests {
 
     @Test
     void testGetMapReturnsNullWhenKeyDoesNotExist() {
-        String key = "application.offers.features";
+        String key = "application.offers.map.features";
         Map<String, Object> data = this.configuration.getMap(key);
         Assertions.assertNull(data);
     }
 
     @Test
     void testGetMapReturnsValueWhenKeyExists() throws IOException, InterruptedException {
-        String key = "application.offers.features";
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
+        String key = "application.offers.map.features";
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(key)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
+        Map<String, Object> data = this.configuration.getMap(key);
+        logger().info(data.toString());
+        Assertions.assertNotNull(data);
+        Assertions.assertEquals(expectedValues.size(), data.size());
+        Assertions.assertEquals(expectedValues, data);
+    }
+
+    @Test
+    void testGetMapReturnsValueWhenKeyExistsAsAString() throws IOException, InterruptedException {
+        String key = "application.offers.str.features";
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
+        updateConfigPropertiesFile(getApplicationProperties());
+        Awaitility.await()
+                .atMost(500, TimeUnit.SECONDS)
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
         Map<String, Object> data = this.configuration.getMap(key);
         logger().info(data.toString());
         Assertions.assertNotNull(data);
@@ -3211,16 +3223,16 @@ class ConfigurationTests extends ArchaiusTests {
 
     @Test
     void testGetMapReturnsValueWhenKeyExistsAndValueIsUpdated() throws IOException, InterruptedException {
-        String key = "application.offers.features";
+        String key = "application.offers.map.features";
         Map<String, Object> data = this.configuration.getMap(key);
         Assertions.assertNull(data);
 
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(key)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
 
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
         Map<String, Object> updatedData = this.configuration.getMap(key);
         logger().info(updatedData.toString());
         Assertions.assertNotNull(updatedData);
@@ -3230,25 +3242,26 @@ class ConfigurationTests extends ArchaiusTests {
 
     @Test
     void testGetMapReturnsDefaultValueWhenKeyDoesNotExist() {
-        String key = "application.offers.features";
-        Map<String, Object> defaultValue = new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap();
+        String key = "application.offers.map.features";
+        Map<String, Object> defaultValue = this.getDefaultMapObject();
         Map<String, Object> data = this.configuration.getMap(key, defaultValue);
         Assertions.assertEquals(defaultValue, data);
     }
 
     @Test
     void testGetMapReturnsUpdateValueIfValueExistsEvenIfDefaultIsProvided() throws IOException, InterruptedException {
-        String key = "application.offers.features";
+        String key = "application.offers.map.features";
         Map<String, Object> data = this.configuration.getMap(key);
         Assertions.assertNull(data);
 
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(key)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
 
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
-        Map<String, Object> updatedData = this.configuration.getMap(key, new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap());
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
+        Map<String, Object> defaultValue = this.getDefaultMapObject();
+        Map<String, Object> updatedData = this.configuration.getMap(key, defaultValue);
         logger().info(updatedData.toString());
         Assertions.assertNotNull(updatedData);
         Assertions.assertEquals(expectedValues.size(), updatedData.size());
@@ -3257,8 +3270,8 @@ class ConfigurationTests extends ArchaiusTests {
 
     @Test
     void testGetMapReturnsDefaultValueSupplierWhenKeyDoesNotExist() {
-        String key = "application.offers.features";
-        Map<String, Object> defaultValue = new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap();
+        String key = "application.offers.map.features";
+        Map<String, Object> defaultValue = this.getDefaultMapObject();
         Supplier<Map<String, Object>> defaultValueSupplier = () -> defaultValue;
         Map<String, Object> data = this.configuration.getMap(key, defaultValueSupplier);
         Assertions.assertEquals(defaultValue, data);
@@ -3266,17 +3279,17 @@ class ConfigurationTests extends ArchaiusTests {
 
     @Test
     void testGetMapReturnsUpdateValueIfValueSupplierExistsEvenIfDefaultIsProvided() throws IOException, InterruptedException {
-        String key = "application.offers.features";
+        String key = "application.offers.map.features";
         Map<String, Object> data = this.configuration.getMap(key);
         Assertions.assertNull(data);
 
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(key)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
 
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
-        Supplier<Map<String, Object>> defaultValueSupplier = () -> new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap();
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
+        Supplier<Map<String, Object>> defaultValueSupplier = this::getDefaultMapObject;
         Map<String, Object> updatedData = this.configuration.getMap(key, defaultValueSupplier);
         logger().info(updatedData.toString());
         Assertions.assertNotNull(updatedData);
@@ -3287,7 +3300,7 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsNullWhenKeyDoesNotExist() {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
@@ -3299,16 +3312,16 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsValueWhenKeyExists() throws IOException, InterruptedException {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
                 .build();
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField.name())));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField.name())));
         Map<String, Object> data = this.configuration.getMap(offerFeaturesField);
         logger().info(data.toString());
         Assertions.assertNotNull(data);
@@ -3319,7 +3332,7 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsValueWhenKeyExistsAndValueIsUpdated() throws IOException, InterruptedException {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
@@ -3330,9 +3343,9 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField.name())));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField.name())));
 
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
         Map<String, Object> updatedData = this.configuration.getMap(offerFeaturesField);
         logger().info(updatedData.toString());
         Assertions.assertNotNull(updatedData);
@@ -3343,13 +3356,13 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsDefaultValueFieldWhenKeyDoesNotExist() {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
-                .defaultValue(new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap())
+                .defaultValue(this.getDefaultMapObject())
                 .build();
-        Map<String, Object> defaultValue = new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap();
+        Map<String, Object> defaultValue = this.getDefaultMapObject();
         Map<String, Object> data = this.configuration.getMap(offerFeaturesField);
         Assertions.assertEquals(defaultValue, data);
     }
@@ -3357,11 +3370,11 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsUpdateValueIfValueExistsEvenIfDefaultFieldIsProvided() throws IOException, InterruptedException {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
-                .defaultValue(new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap())
+                .defaultValue(this.getDefaultMapObject())
                 .build();
         Map<String, Object> data = this.configuration.getMap(offerFeaturesField);
         Assertions.assertNotNull(data);
@@ -3371,9 +3384,9 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField.name())));
 
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
         Map<String, Object> updatedData = this.configuration.getMap(offerFeaturesField);
         logger().info(updatedData.toString());
         Assertions.assertNotNull(updatedData);
@@ -3384,13 +3397,13 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsDefaultValueWhenKeyDoesNotExist() {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
-                .defaultValue(new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap())
+                .defaultValue(this.getDefaultMapObject())
                 .build();
-        Map<String, Object> defaultValue = new JSONObject("{\"v1\": {\"enabled\": \"false\"}}").toMap();
+        Map<String, Object> defaultValue = Collections.singletonMap("v1.enabled", "false");
         Map<String, Object> data = this.configuration.getMap(offerFeaturesField, defaultValue);
         Assertions.assertEquals(defaultValue, data);
     }
@@ -3398,11 +3411,11 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsUpdateValueIfValueExistsEvenIfDefaultIsProvided() throws IOException, InterruptedException {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
-                .defaultValue(new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap())
+                .defaultValue(this.getDefaultMapObject())
                 .build();
         Map<String, Object> data = this.configuration.getMap(offerFeaturesField);
         Assertions.assertNotNull(data);
@@ -3412,10 +3425,10 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField.name())));
 
-        Map<String, Object> defaultValue = new JSONObject("{\"v1\": {\"enabled\": \"false\"}}").toMap();
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
+        Map<String, Object> defaultValue = Collections.singletonMap("v1.enabled", "false");
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
         Map<String, Object> updatedData = this.configuration.getMap(offerFeaturesField, defaultValue);
         logger().info(updatedData.toString());
         Assertions.assertNotNull(updatedData);
@@ -3426,13 +3439,13 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsDefaultValueSupplierWhenKeyDoesNotExist() {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
-                .defaultValue(new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap())
+                .defaultValue(this.getDefaultMapObject())
                 .build();
-        Map<String, Object> defaultValue = new JSONObject("{\"v1\": {\"enabled\": \"false\"}}").toMap();
+        Map<String, Object> defaultValue = Collections.singletonMap("v1.enabled", "false");
         Supplier<Map<String, Object>> defaultValueSupplier = () -> defaultValue;
         Map<String, Object> data = this.configuration.getMap(offerFeaturesField, defaultValueSupplier);
         Assertions.assertEquals(defaultValue, data);
@@ -3441,11 +3454,11 @@ class ConfigurationTests extends ArchaiusTests {
     @Test
     void testGetMapFieldReturnsUpdateValueIfValueSupplierExistsEvenIfDefaultIsProvided() throws IOException, InterruptedException {
         Field offerFeaturesField = Field.builder()
-                .name("application.offers.features")
+                .name("application.offers.map.features")
                 .displayName("Offer Features")
                 .desc("The map containing configuration related to different offer features")
                 .type(Field.Type.MAP)
-                .defaultValue(new JSONObject("{\"v1\": {\"enabled\": \"false\"}, \"displayFeatures\": \"false\", \"displayText\": \"Offers Not available\"}").toMap())
+                .defaultValue(this.getDefaultMapObject())
                 .build();
         Map<String, Object> data = this.configuration.getMap(offerFeaturesField);
         Assertions.assertNotNull(data);
@@ -3455,15 +3468,31 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField.name())));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField.name())));
 
-        Map<String, Object> expectedValues = new JSONObject("{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}").toMap();
-        Supplier<Map<String, Object>> defaultValueSupplier = () -> new JSONObject("{\"v1\": {\"enabled\": \"false\"}}").toMap();
+        Map<String, Object> expectedValues = this.getExpectedMapObject();
+        Supplier<Map<String, Object>> defaultValueSupplier = () -> Collections.singletonMap("v1.enabled", "false");
         Map<String, Object> updatedData = this.configuration.getMap(offerFeaturesField, defaultValueSupplier);
         logger().info(updatedData.toString());
         Assertions.assertNotNull(updatedData);
         Assertions.assertEquals(expectedValues.size(), updatedData.size());
         Assertions.assertEquals(expectedValues, updatedData);
+    }
+
+    private Map<String, Object> getExpectedMapObject() {
+        HashMap<String, Object> expectedValueMap = new HashMap<>();
+        expectedValueMap.put("v1.enabled", "true");
+        expectedValueMap.put("displayFeatures", "true");
+        expectedValueMap.put("displayText", "Offer Features");
+        return expectedValueMap;
+    }
+
+    private Map<String, Object> getDefaultMapObject() {
+        HashMap<String, Object> expectedValueMap = new HashMap<>();
+        expectedValueMap.put("v1.enabled", "false");
+        expectedValueMap.put("displayFeatures", "false");
+        expectedValueMap.put("displayText", "Offers Not available");
+        return expectedValueMap;
     }
     
     @Test
@@ -3484,7 +3513,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(key)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
         OffersFeaturesDto data = this.configuration.getObject(key, OffersFeaturesDto.class);
         logger().info(data.toString());
         Assertions.assertNotNull(data);
@@ -3505,7 +3534,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(key)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
 
         OffersFeaturesDto updatedData = this.configuration.getObject(key, OffersFeaturesDto.class);
         logger().info(updatedData.toString());
@@ -3546,7 +3575,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(key)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
 
         OffersFeaturesDto updatedData = this.configuration.getObject(key, defaultValue, OffersFeaturesDto.class);
         logger().info(updatedData.toString());
@@ -3589,7 +3618,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(key)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(key)));
 
         Supplier<OffersFeaturesDto> defaultValueSupplier = () -> defaultValue;
         OffersFeaturesDto updatedData = this.configuration.getObject(key, defaultValueSupplier, OffersFeaturesDto.class);
@@ -3626,7 +3655,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField.name())));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField.name())));
         OffersFeaturesDto data = this.configuration.getObject(offerFeaturesField, OffersFeaturesDto.class);
         logger().info(data.toString());
         Assertions.assertNotNull(data);
@@ -3652,7 +3681,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField.name())));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField.name())));
 
         OffersFeaturesDto updatedData = this.configuration.getObject(offerFeaturesField, OffersFeaturesDto.class);
         logger().info(updatedData.toString());
@@ -3706,7 +3735,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField)));
 
         OffersFeaturesDto updatedData = this.configuration.getObject(offerFeaturesField, OffersFeaturesDto.class);
         logger().info(updatedData.toString());
@@ -3761,7 +3790,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField)));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField)));
 
         OffersFeaturesDto updatedData = this.configuration.getObject(offerFeaturesField, defaultValue, OffersFeaturesDto.class);
         logger().info(updatedData.toString());
@@ -3817,7 +3846,7 @@ class ConfigurationTests extends ArchaiusTests {
         updateConfigPropertiesFile(getApplicationProperties());
         Awaitility.await()
                 .atMost(500, TimeUnit.SECONDS)
-                .until(() -> StringUtils.hasText(this.configuration.getString(offerFeaturesField.name())));
+                .until(() -> !CollectionUtils.isEmpty(this.configuration.getMap(offerFeaturesField.name())));
 
         Supplier<OffersFeaturesDto> defaultValueSupplier = () -> defaultValue;
         OffersFeaturesDto updatedData = this.configuration.getObject(offerFeaturesField, defaultValueSupplier, OffersFeaturesDto.class);

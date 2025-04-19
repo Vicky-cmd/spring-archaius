@@ -23,7 +23,13 @@ import java.util.List;
                 new ApplicationProperty("456", "database.connectivity.enabled", "true"),
                 new ApplicationProperty("789", "application.bbsale.offer.percentage", "5.7"),
                 new ApplicationProperty("754", "application.control.annotation", "io.github.vickycmd.config.EnableSpringArchaius"),
-                new ApplicationProperty("101", "application.offers.features", "{\"v1\": {\"enabled\": \"true\"}, \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}", "All the configuration related to the Offers Features")
+                new ApplicationProperty("101", "application.offers.str.features", "{\"v1.enabled\": \"true\", \"displayFeatures\": \"true\", \"displayText\": \"Offer Features\"}", "All the configuration related to the Offers Features"),
+                new ApplicationProperty("102", "application.offers.features.v1", "{\"enabled\":true}", "All the configuration related to the V1 Features Enabled"),
+                new ApplicationProperty("103", "application.offers.features.displayFeatures", "true", "All the configuration related to the Offers Display Features"),
+                new ApplicationProperty("104", "application.offers.features.displayText", "Offer Features", "All the configuration related to the Offers Display Text"),
+                new ApplicationProperty("102", "application.offers.map.features.v1.enabled", "true", "All the configuration related to the V1 Features Enabled"),
+                new ApplicationProperty("103", "application.offers.map.features.displayFeatures", "true", "All the configuration related to the Offers Display Features"),
+                new ApplicationProperty("104", "application.offers.map.features.displayText", "Offer Features", "All the configuration related to the Offers Display Text")
         );
     }
 

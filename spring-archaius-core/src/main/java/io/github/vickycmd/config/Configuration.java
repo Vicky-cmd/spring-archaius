@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.function.*;
 
@@ -1822,8 +1824,7 @@ public class Configuration {
      * </pre>
      */
     public Map<String, Object> getMap(String property, Map<String, Object> defaultMap) {
-        return this.getOptional(property, String.class).map(value -> new JSONObject(value).toMap())
-                .orElse(defaultMap);
+        return this.getMap(property, () -> defaultMap);
     }
 
     /**
@@ -1844,8 +1845,37 @@ public class Configuration {
      * </pre>
      */
     public Map<String, Object> getMap(String property, Supplier<Map<String, Object>> defaultValueSupplier) {
-        return this.getOptional(property, String.class).map(value -> new JSONObject(value).toMap())
-                .orElse(defaultValueSupplier.get());
+        if (this.environment.containsProperty(property)) {
+            return new JSONObject(this.environment.getProperty(property)).toMap();
+        }
+        Map<String, Object> props = new HashMap<>();
+        for (var propertyName : ((org.springframework.core.env.AbstractEnvironment) this.environment).getPropertySources()) {
+            if (propertyName instanceof org.springframework.core.env.EnumerablePropertySource<?> enumerable) {
+                for (String key : enumerable.getPropertyNames()) {
+                    if (key.startsWith(String.format("%s.", property))) {
+                        String shortKey = key.substring(String.format("%s.", property).length());
+                        String value = this.environment.getProperty(key);
+                        if (value != null) {
+                            props.put(shortKey, this.isValidJson(value)?(new JSONObject(value).toMap()):value);
+                        }
+                    }
+                }
+            }
+        }
+        if (CollectionUtils.isEmpty(props)) {
+            return defaultValueSupplier.get();
+        }
+
+        return  props;
+    }
+
+    private boolean isValidJson(String value) {
+        if (!value.startsWith("{") || !value.endsWith("}")) return false;
+
+        return Try.of(() -> mapper.readTree(value))
+            .map(json -> true)
+            .getOrElse(false);
+
     }
 
     /**
@@ -2011,9 +2041,10 @@ public class Configuration {
      * </pre>
      */
     public <T> T getObject(String property, T defaultValue, Class<T> targetType) {
-        return this.getOptional(property, String.class)
-                .map(value -> mapper.convertValue(new JSONObject(value).toMap(), targetType))
+        return Optional.ofNullable(this.getMap(property))
+                .map(value -> mapper.convertValue(value, targetType))
                 .orElse(defaultValue);
+
     }
 
     /**

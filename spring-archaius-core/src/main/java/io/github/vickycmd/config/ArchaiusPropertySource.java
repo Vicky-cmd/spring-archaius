@@ -1,11 +1,15 @@
 package io.github.vickycmd.config;
 
+import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicPropertyFactory;
+import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 /**
  * ArchaiusPropertySource is a custom implementation of the Spring PropertySource
@@ -43,7 +47,7 @@ import java.util.Objects;
  * <p>Since: 2023</p>
  */
 @Component
-public final class ArchaiusPropertySource extends PropertySource<Object> {
+public final class ArchaiusPropertySource extends EnumerablePropertySource<Object> {
 
     DynamicPropertyFactory propertyFactory = DynamicPropertyFactory.getInstance();
 
@@ -77,5 +81,14 @@ public final class ArchaiusPropertySource extends PropertySource<Object> {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), propertyFactory);
+    }
+
+    @Override
+    @NonNull
+    public String[] getPropertyNames() {
+        return StreamSupport.stream(Spliterators
+                .spliteratorUnknownSize(ConfigurationManager
+                        .getConfigInstance().getKeys(), 0), false)
+                .toArray(String[]::new);
     }
 }
