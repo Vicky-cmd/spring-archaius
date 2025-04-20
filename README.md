@@ -5,7 +5,7 @@
     <h1>Spring Archaius</h1>
 </div>
 
-[![License][license-image]][license-url]
+[![Maven Central][maven-url]][maven-search-url][![License][license-image]][license-url][![Build Status][build-status]][build-url]
 
 <hr/>
 
@@ -382,3 +382,8 @@ For issues and questions:
 [license-url]: LICENSE
 [license-image]: https://img.shields.io/badge/License-GPLv3-green.svg?style=for-the-badge&logo=appveyor
 
+[maven-url]: https://img.shields.io/maven-central/v/io.github.vicky-cmd/spring-archaius-core?style=for-the-badge&logo=appveyor
+[maven-search-url]: https://mvnrepository.com/artifact/io.github.vicky-cmd/spring-archaius-core
+
+[build-status]: https://img.shields.io/github/actions/workflow/status/Vicky-cmd/spring-archaius/.github/workflows/maven-publish.yml?style=for-the-badge&logo=appveyor
+[build-url]: https://github.com/Vicky-cmd/spring-archaius/actions
